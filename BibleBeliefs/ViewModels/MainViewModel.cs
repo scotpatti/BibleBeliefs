@@ -1,9 +1,8 @@
-﻿using System.Collections.Generic;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Windows;
-using BibleBeliefs.Database;
+using BibleBeliefs.Repository;
 
 namespace BibleBeliefs.ViewModels
 {
@@ -11,83 +10,81 @@ namespace BibleBeliefs.ViewModels
     {
 
         #region Private Fields
-        private BibleBeliefsContext context;
-
-        private BindingList<Topics> _Topics;
-        private BindingList<Beliefs> _Beliefs;
-        private BindingList<Verses> _Verses;
-        private Topics _SelectedTopic;
-        private Beliefs _SelectedBelief;
-        private Verses _SelectedVerse;
+        private BindingList<TopicDTO> _Topics;
+        private BindingList<BeliefDTO> _Beliefs;
+        private BindingList<VerseDTO> _Verses;
+        private TopicDTO _SelectedTopic;
+        private BeliefDTO _SelectedBelief;
+        private VerseDTO _SelectedVerse;
         #endregion
 
         #region Public Properties
-        public BindingList<Topics> Topics
+        public BindingList<TopicDTO> Topics
         {
             get { return _Topics; }
             set
             {
-                SetField<BindingList<Topics>>(ref _Topics, value);
+                SetField<BindingList<TopicDTO>>(ref _Topics, value);
                 SelectedTopic = Topics != null && Topics.Count > 0 ? Topics[0] : null;
             }
         }
 
-        public BindingList<Beliefs> Beliefs
+        public BindingList<BeliefDTO> Beliefs
         {
             get { return _Beliefs; }
             set
             {
-                SetField<BindingList<Beliefs>>(ref _Beliefs, value);
+                SetField<BindingList<BeliefDTO>>(ref _Beliefs, value);
                 SelectedBelief = Beliefs != null && Beliefs.Count > 0 ? Beliefs[0] : null;
             }
         }
 
-        public BindingList<Verses> Verses
+        public BindingList<VerseDTO> Verses
         {
             get { return _Verses; }
             set
             {
-                SetField<BindingList<Verses>>(ref _Verses, value);
+                SetField<BindingList<VerseDTO>>(ref _Verses, value);
                 SelectedVerse = Verses != null && Verses.Count > 0 ? Verses[0] : null;
             }
         }
 
-        public Topics SelectedTopic
+        public TopicDTO SelectedTopic
         {
             get { return _SelectedTopic; }
             set
             {
-                SetField<Topics>(ref _SelectedTopic, value);
+                SetField<TopicDTO>(ref _SelectedTopic, value);
                 if (_SelectedTopic != null)
                 {
-                    var beliefs = context.Beliefs.Where(x => x.TopicId == _SelectedTopic.Id).ToList();
-                    Beliefs = beliefs != null ? new BindingList<Beliefs>(beliefs) : Beliefs = new BindingList<Beliefs>();
+                    var beliefs = BibleBeliefsRepository.GetBeliefs(_SelectedTopic.Id);
+                    Beliefs = beliefs != null ? beliefs : new BindingList<BeliefDTO>();
                 }
             }
         }
 
 
-        public Beliefs SelectedBelief
+        public BeliefDTO SelectedBelief
         {
             get { return _SelectedBelief; }
             set
             {
 
-                SetField<Beliefs>(ref _SelectedBelief, value);
+                SetField<BeliefDTO>(ref _SelectedBelief, value);
                 if (_SelectedBelief != null)
                 {
-                    var verses = context.Verses.Where(x => x.BeliefId == _SelectedBelief.Id).ToList();
-                    Verses = verses != null ? new BindingList<Verses>(verses) : new BindingList<Verses>();
+                    var verses = BibleBeliefsRepository.GetVerses(_SelectedBelief.Id);
+                    Verses = verses != null ? verses : new BindingList<VerseDTO>();
                 }
             }
         }
 
-        public Verses SelectedVerse
+        public VerseDTO SelectedVerse
         {
             get { return _SelectedVerse; }
             set
             {
-                SetField<Verses>(ref _SelectedVerse, value);
+                SetField<VerseDTO>(ref _SelectedVerse, value);
                 //ToDo: Some logic here to edit a verse
             }
         }
@@ -106,8 +103,7 @@ namespace BibleBeliefs.ViewModels
 
         public MainViewModel()
         {
-            context = new BibleBeliefsContext();
-            Topics = new BindingList<Topics>(context.Topics.OrderBy(x => x.Topic).ToList());
+            Topics = BibleBeliefsRepository.GetTopics();
             SelectedTopic = Topics[0];
             SelectedVerseCommand = new DelegateCommand<object>(ClickVerse, (object o) => true);
             NewTopicCommand = new DelegateCommand<object>(ClickNewTopic, (object o) => true);
@@ -128,7 +124,19 @@ namespace BibleBeliefs.ViewModels
 
         private void ClickNewTopic(object o)
         {
-            MessageBox.Show("So you wanted to add a new topic...?");
+            EditTopicWindow topicDialog = new EditTopicWindow();
+            topicDialog.ShowDialog();
+            if (topicDialog.DialogResult == true)
+            {
+                TopicDTO topic = new TopicDTO()
+                {
+                    Topic = topicDialog.TopicValue
+                };
+                long newId = BibleBeliefsRepository.CreateTopic(topic);
+                Topics = BibleBeliefsRepository.GetTopics();
+                var t = Topics.Single(s => s.Id == newId);
+                if (t != null) SelectedTopic = t;
+            }
         }
 
         private void ClickNewBelief(object o)
@@ -143,7 +151,14 @@ namespace BibleBeliefs.ViewModels
 
         private void ClickEditTopic(object o)
         {
-            MessageBox.Show($"Edit topic: {SelectedTopic.Topic}");
+            EditTopicWindow topicDialog = new EditTopicWindow();
+            topicDialog.TopicValue = SelectedTopic.Topic;
+            topicDialog.ShowDialog();
+            if (topicDialog.DialogResult == true)
+            {
+                SelectedTopic.Topic = topicDialog.TopicValue;
+                BibleBeliefsRepository.UpdateTopic(_SelectedTopic);
+            }
         }
 
         private void ClickEditBelief(object o)
@@ -158,18 +173,21 @@ namespace BibleBeliefs.ViewModels
 
         private void ClickDeleteTopic(object o)
         {
-            MessageBox.Show($"Delete topic: \"{SelectedTopic.Topic}\"");
+            BibleBeliefsRepository.DeleteTopic(_SelectedTopic);
+            Topics = BibleBeliefsRepository.GetTopics();
         }
 
         private void ClickDeleteBelief(object o)
         {
-            MessageBox.Show($"Delete belief: \"{SelectedBelief.Belief.Substring(0, 20)}...\"");
+            MessageBox.Show($"Delete Belief: \"{SelectedBelief.Belief}\"");
+
         }
 
         private void ClickDeleteVerse(object o)
         {
             MessageBox.Show($"Delete verse: \"{SelectedVerse.VerseText}\"");
         }
+
 
         #region INPC
         public event PropertyChangedEventHandler PropertyChanged;
