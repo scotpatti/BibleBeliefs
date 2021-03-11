@@ -76,6 +76,10 @@ namespace BibleBeliefs.ViewModels
                     var verses = BibleBeliefsRepository.GetVerses(_SelectedBelief.Id);
                     Verses = verses != null ? verses : new BindingList<VerseDTO>();
                 }
+                else
+                {
+                    Verses = null;
+                }
             }
         }
 
@@ -85,11 +89,9 @@ namespace BibleBeliefs.ViewModels
             set
             {
                 SetField<VerseDTO>(ref _SelectedVerse, value);
-                //ToDo: Some logic here to edit a verse
             }
         }
 
-        public DelegateCommand<object> SelectedVerseCommand { get; set; }
         public DelegateCommand<object> NewTopicCommand { get; set; }
         public DelegateCommand<object> NewBeliefCommand { get; set; }
         public DelegateCommand<object> NewVerseCommand { get; set; }
@@ -105,7 +107,6 @@ namespace BibleBeliefs.ViewModels
         {
             Topics = BibleBeliefsRepository.GetTopics();
             SelectedTopic = Topics[0];
-            SelectedVerseCommand = new DelegateCommand<object>(ClickVerse, (object o) => true);
             NewTopicCommand = new DelegateCommand<object>(ClickNewTopic, (object o) => true);
             NewBeliefCommand = new DelegateCommand<object>(ClickNewBelief, (object o) => SelectedTopic != null);
             NewVerseCommand = new DelegateCommand<object>(ClickNewVerse, (object o) => SelectedBelief != null);
@@ -117,14 +118,10 @@ namespace BibleBeliefs.ViewModels
             DeleteVerseCommand = new DelegateCommand<object>(ClickDeleteVerse, (object o) => SelectedBelief != null);
         }
 
-        private void ClickVerse(object o)
-        {
-            MessageBox.Show($"Did you want to Edit {SelectedVerse.VerseText}?");
-        }
-
         private void ClickNewTopic(object o)
         {
             EditTopicWindow topicDialog = new EditTopicWindow();
+            topicDialog.TopicValue = "";
             topicDialog.ShowDialog();
             if (topicDialog.DialogResult == true)
             {
@@ -173,8 +170,14 @@ namespace BibleBeliefs.ViewModels
 
         private void ClickDeleteTopic(object o)
         {
-            BibleBeliefsRepository.DeleteTopic(_SelectedTopic);
-            Topics = BibleBeliefsRepository.GetTopics();
+            if (!BibleBeliefsRepository.DeleteTopic(_SelectedTopic))
+            {
+                MessageBox.Show("Topic has child beliefs. You must delete the beliefs before you can delete the topic!");
+            }
+            else
+            {
+                Topics = BibleBeliefsRepository.GetTopics();
+            }
         }
 
         private void ClickDeleteBelief(object o)

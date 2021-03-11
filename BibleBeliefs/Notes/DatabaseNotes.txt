@@ -1,0 +1,14 @@
+﻿In the BibleBeliefsContext, we had to change each autoincremented Id field. See
+https://github.com/dotnet/efcore/issues/11961 for information (suposedly fixed)
+in 5.0 release. Changes made on Topics:_Id, Beliefs:_Id, Verses:_Id as follows:
+
+ entity.Property(e => e.Id)
+    .HasColumnName("_id")
+    .ValueGeneratedOnAdd();
+    //.ValueGeneratedNever();
+
+If you re-generate the database using:
+
+PM> Scaffold-DbContext "DataSource=.\DataBase\BibleBeliefs.db;" Microsoft.EntityFrameworkCore.SQLite -OutputDir "Database" -ContextDir "Database"
+
+You will need to make the changes again!

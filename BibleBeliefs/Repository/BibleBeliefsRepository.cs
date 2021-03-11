@@ -1,6 +1,7 @@
 ﻿using BibleBeliefs.Database;
 using System.Linq;
 using System.ComponentModel;
+using Microsoft.EntityFrameworkCore;
 
 namespace BibleBeliefs.Repository
 {
@@ -66,16 +67,14 @@ namespace BibleBeliefs.Repository
         /// <returns>true -> success</returns>
         public static bool DeleteTopic(TopicDTO topic)
         {
-            var topics = context.Topics.Where(x => x.Id == topic.Id).FirstOrDefault();
-            if (topics != null && topics.Beliefs.Count == 0)
-            {
-                context.Remove(topics);
-                context.SaveChanges();
-                return true;
-            }
-            return false;
+            var topics = context.Topics.Include(a => a.Beliefs).Where(x => x.Id == topic.Id).FirstOrDefault();
+            if (topics == null) return false;
+            if (topics.Beliefs.Count() > 0) return false;
+            context.Remove(topics);
+            context.SaveChanges();
+            return true;
         }
-        
+
         #endregion
 
         #region Beliefs
@@ -89,6 +88,38 @@ namespace BibleBeliefs.Repository
                 TopicId = x.TopicId
             }).ToList();
             return new BindingList<BeliefDTO>(list);
+        }
+
+        public static bool UpdateBelief(BeliefDTO belief)
+        {
+            var dbBelief = context.Beliefs.Where(x => x.Id == belief.Id).FirstOrDefault();
+            if (dbBelief == null) return false;
+            bool updated = false;
+            if (dbBelief.TopicId != belief.TopicId)
+            {
+                dbBelief.TopicId = belief.TopicId;
+                updated = true;
+            }
+            if (dbBelief.Belief == belief.Belief)
+            {
+                dbBelief.Belief = belief.Belief;
+                updated = true;
+            }
+            if (updated)
+            {
+                context.SaveChanges();
+            }
+            return true;
+        }
+
+        public static bool DeleteBelief(int beliefId)
+        {
+            var belief = context.Beliefs.Include(a => a.Verses).Where(x => x.Id == beliefId).FirstOrDefault();
+            if (belief == null) return false;
+            if (belief.Verses.Count > 0) return false;
+            context.Beliefs.Remove(belief);
+            context.SaveChanges();
+            return true;
         }
 
         #endregion
@@ -109,6 +140,8 @@ namespace BibleBeliefs.Repository
             }).ToList();
             return new BindingList<VerseDTO>(list);
         }
+
+
 
         #endregion
     }

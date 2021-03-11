@@ -38,7 +38,8 @@ namespace BibleBeliefs.Database
 
                 entity.Property(e => e.Id)
                     .HasColumnName("_id")
-                    .ValueGeneratedNever();
+                    .ValueGeneratedOnAdd();
+                    //.ValueGeneratedNever();
 
                 entity.Property(e => e.Belief)
                     .IsRequired()
@@ -55,7 +56,7 @@ namespace BibleBeliefs.Database
             {
                 entity.Property(e => e.BookId)
                     .HasColumnType("INT")
-                    .ValueGeneratedNever();
+                    .ValueGeneratedNever(); //NOTE: BookId is not autoincrement
 
                 entity.Property(e => e.BookTitle).IsRequired();
             });
@@ -80,7 +81,8 @@ namespace BibleBeliefs.Database
 
                 entity.Property(e => e.Id)
                     .HasColumnName("_id")
-                    .ValueGeneratedNever();
+                    .ValueGeneratedOnAdd();
+                    //.ValueGeneratedNever();
 
                 entity.Property(e => e.BeliefId).HasColumnName("belief_id");
 
