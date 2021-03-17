@@ -9,6 +9,8 @@ namespace BibleBeliefs.ViewModels
     public class MainViewModel : INotifyPropertyChanged
     {
         #region Private Fields
+        private BibleRepository _BibleRepository;
+
         private BindingList<TopicDTO> _Topics;
         private BindingList<BeliefDTO> _Beliefs;
         private BindingList<VerseDTO> _Verses;
@@ -88,6 +90,16 @@ namespace BibleBeliefs.ViewModels
             set
             {
                 SetField<VerseDTO>(ref _SelectedVerse, value);
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("VerseText")); //dependent property -> VerseText
+            }
+        }
+
+        public string VerseText
+        {
+            get
+            {
+                if (SelectedVerse == null) return "";
+                return "VERSE TEXT\r\n" + _BibleRepository.GetVerseText(SelectedVerse);
             }
         }
 
@@ -106,6 +118,7 @@ namespace BibleBeliefs.ViewModels
         #region Constructor
         public MainViewModel()
         {
+            _BibleRepository = new BibleRepository();
             Topics = BibleBeliefsRepository.GetTopics();
             SelectedTopic = Topics[0];
             NewTopicCommand = new DelegateCommand<object>(ClickNewTopic, (object o) => true);

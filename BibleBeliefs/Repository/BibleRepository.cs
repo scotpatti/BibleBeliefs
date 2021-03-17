@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Text;
 using Microsoft.Data.Sqlite;
 
 namespace BibleBeliefs.Repository
@@ -68,6 +69,24 @@ namespace BibleBeliefs.Repository
                 rval.Add(i+1);
             }
             return rval;
+        }
+
+        internal string GetVerseText(VerseDTO verse)
+        {
+            StringBuilder sb = new StringBuilder();
+            var conn = GetConnection();
+            var comm = new SqliteCommand($"SELECT verse, content FROM bible_fts WHERE book = '{Books.BookAbbrevArray[verse.Book]}' AND CAST(chapter AS int) = {verse.Chapter+1} AND CAST(verse AS int) >= {verse.VerseStart+1} and CAST(verse as int) <= {verse.VerseEnd+1}; ", conn);
+            var reader = comm.ExecuteReader();
+            if (reader.HasRows)
+            {
+                while (reader.Read())
+                {
+                    sb.Append("(" + reader.GetString(0) + ") ");
+                    sb.Append(reader.GetString(1) + "\r\n");
+                }
+            }
+            sb.Append(" - " + verse.ToString());
+            return sb.ToString();
         }
     }
 }

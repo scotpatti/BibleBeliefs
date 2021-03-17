@@ -36,9 +36,9 @@ namespace BibleBeliefs.ViewModels
         {
             repo = new BibleRepository(); //using the default kjv version
             SetBookList(); //This will cause the other lists to be populated.
-            SelectedChapter = 1;
-            SelectedVerseStart = 1;
-            SelectedVerseEnd = 1;
+            SelectedChapter = 0;
+            SelectedVerseStart = 0;
+            SelectedVerseEnd = 0;
         }
 
         private void SetBookList()
@@ -56,8 +56,11 @@ namespace BibleBeliefs.ViewModels
         private void SetVerseList()
         {
             VerseList = repo.GetVerses(SelectedBook, SelectedChapter);
-            SelectedVerseStart = VerseList[0];
-            SelectedVerseEnd = VerseList[0];
+            if (SelectedVerseStart > VerseList.Count)
+            {
+                SelectedVerseStart = VerseList[0];
+                SelectedVerseEnd = VerseList[0];
+            }
         }
 
         private void ChangeBook(string book)
