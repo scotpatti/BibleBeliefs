@@ -1,5 +1,4 @@
-﻿Add a Verse
-Edit a Verse
-Delete a Verse - Always delete a Verse!
+﻿This is Dr. A's scratch pad.
 
-Check if content is empty - then default to cancel on dialogs.
+No issues at the moment. 
+
