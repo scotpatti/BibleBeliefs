@@ -79,6 +79,16 @@ namespace BibleBeliefs.Repository
 
         #region Beliefs
 
+        public static long CreateBelief(BeliefDTO belief)
+        {
+            Beliefs beliefs = new Beliefs();
+            beliefs.Belief = belief.Belief;
+            beliefs.TopicId = belief.TopicId;
+            context.Add<Beliefs>(beliefs);
+            context.SaveChanges();
+            return beliefs.Id;
+        }
+
         public static BindingList<BeliefDTO> GetBeliefs(long topicId)
         {
             var list = context.Beliefs.Where(f => f.TopicId == topicId).Select(x => new BeliefDTO
@@ -100,7 +110,7 @@ namespace BibleBeliefs.Repository
                 dbBelief.TopicId = belief.TopicId;
                 updated = true;
             }
-            if (dbBelief.Belief == belief.Belief)
+            if (dbBelief.Belief != belief.Belief)
             {
                 dbBelief.Belief = belief.Belief;
                 updated = true;
@@ -109,10 +119,10 @@ namespace BibleBeliefs.Repository
             {
                 context.SaveChanges();
             }
-            return true;
+            return updated;
         }
 
-        public static bool DeleteBelief(int beliefId)
+        public static bool DeleteBelief(long beliefId)
         {
             var belief = context.Beliefs.Include(a => a.Verses).Where(x => x.Id == beliefId).FirstOrDefault();
             if (belief == null) return false;
@@ -125,6 +135,19 @@ namespace BibleBeliefs.Repository
         #endregion
 
         #region Verses
+        public static long CreateVerse(VerseDTO verse)
+        {
+            Verses verses = new Verses();
+            verses.BeliefId = verse.BeliefId;
+            verses.Book = verse.Book;
+            verses.Chapter = verse.Chapter;
+            verses.VerseStart = verse.VerseStart;
+            verses.VerseEnd = verse.VerseEnd;
+            verses.Verse = verse.ToString();
+            context.Add<Verses>(verses);
+            context.SaveChanges();
+            return verses.Id;
+        }
 
         public static BindingList<VerseDTO> GetVerses(long beliefId)
         {
@@ -141,8 +164,51 @@ namespace BibleBeliefs.Repository
             return new BindingList<VerseDTO>(list);
         }
 
+        public static bool UpdateVerse(VerseDTO verse)
+        {
+            var dbVerse = context.Verses.Where(x => x.Id == verse.Id).FirstOrDefault();
+            if (dbVerse == null) return false;
+            bool updated = false;
+            if (dbVerse.BeliefId != verse.BeliefId)
+            {
+                dbVerse.BeliefId = verse.BeliefId;
+                updated = true;
+            }
+            if (dbVerse.Book != verse.Book)
+            {
+                dbVerse.Book = verse.Book;
+                updated = true;
+            }
+            if (dbVerse.Chapter != verse.Chapter)
+            {
+                dbVerse.Chapter = verse.Chapter;
+                updated = true;
+            }
+            if (dbVerse.VerseStart != verse.VerseStart)
+            {
+                dbVerse.VerseStart = verse.VerseStart;
+                updated = true;
+            }
+            if (dbVerse.VerseEnd != verse.VerseEnd)
+            {
+                dbVerse.VerseEnd = verse.VerseEnd;
+                updated = true;
+            }
+            if (updated)
+            {
+                context.SaveChanges();
+            }
+            return updated;
+        }
 
-
+        public static bool DeleteVerse(long verseId)
+        {
+            var verse = context.Verses.Where(x => x.Id == verseId).FirstOrDefault();
+            if (verse == null) return false;
+            context.Verses.Remove(verse);
+            context.SaveChanges();
+            return true;
+        }
         #endregion
     }
 }

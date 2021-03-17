@@ -61,7 +61,7 @@
                   ItemsSource="{Binding Verses}"
                   AutoGenerateColumns="False"
                   IsSynchronizedWithCurrentItem="True"
-                  SelectedItem="{Binding Verse}"
+                  SelectedItem="{Binding SelectedVerse}"
                   IsReadOnly="True">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Verse" Width="*" Binding="{Binding VerseText}"/>

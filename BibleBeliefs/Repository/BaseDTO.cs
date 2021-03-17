@@ -9,10 +9,12 @@ namespace BibleBeliefs.Repository
         #region INPC
         public event PropertyChangedEventHandler PropertyChanged;
 
-        protected void SetField<T>(ref T field, T value, [CallerMemberName] string propertyName = null)
+        protected bool SetField<T>(ref T field, T value, [CallerMemberName] string propertyName = null)
         {
+            if (!(field == null) && field.Equals(value)) return false;
             field = value;
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+            return true;
         }
         #endregion
     }

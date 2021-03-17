@@ -1,9 +1,5 @@
-﻿test {
-	Add a Belief 
-	Edit a Belief
-	Delete a Belief - Do not delete a belief that has connected verses
-}
-
-Add a Verse
+﻿Add a Verse
 Edit a Verse
 Delete a Verse - Always delete a Verse!
+
+Check if content is empty - then default to cancel on dialogs.

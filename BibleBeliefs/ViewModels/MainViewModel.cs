@@ -8,7 +8,6 @@ namespace BibleBeliefs.ViewModels
 {
     public class MainViewModel : INotifyPropertyChanged
     {
-
         #region Private Fields
         private BindingList<TopicDTO> _Topics;
         private BindingList<BeliefDTO> _Beliefs;
@@ -101,8 +100,10 @@ namespace BibleBeliefs.ViewModels
         public DelegateCommand<object> DeleteTopicCommand { get; set; }
         public DelegateCommand<object> DeleteBeliefCommand { get; set; }
         public DelegateCommand<object> DeleteVerseCommand { get; set; }
+
         #endregion
 
+        #region Constructor
         public MainViewModel()
         {
             Topics = BibleBeliefsRepository.GetTopics();
@@ -117,6 +118,9 @@ namespace BibleBeliefs.ViewModels
             DeleteBeliefCommand = new DelegateCommand<object>(ClickDeleteBelief, (object o) => SelectedTopic != null);
             DeleteVerseCommand = new DelegateCommand<object>(ClickDeleteVerse, (object o) => SelectedBelief != null);
         }
+        #endregion
+
+        #region NEW Functionality
 
         private void ClickNewTopic(object o)
         {
@@ -138,13 +142,48 @@ namespace BibleBeliefs.ViewModels
 
         private void ClickNewBelief(object o)
         {
-            MessageBox.Show($"So you wanted to add a new belief to {SelectedTopic.Topic}?");
+            EditBeliefWindow beliefDialog = new EditBeliefWindow();
+            beliefDialog.BeliefValue = "";
+            beliefDialog.ShowDialog();
+            if (beliefDialog.DialogResult == true)
+            {
+                BeliefDTO belief = new BeliefDTO()
+                {
+                    Belief = beliefDialog.BeliefValue,
+                    TopicId = SelectedTopic.Id
+                };
+                long newId = BibleBeliefsRepository.CreateBelief(belief);
+                Beliefs = BibleBeliefsRepository.GetBeliefs(SelectedTopic.Id);
+                var b = Beliefs.Single(s => s.Id == newId);
+                if (b != null) SelectedBelief = b;
+            }
         }
 
         private void ClickNewVerse(object o)
         {
-            MessageBox.Show($"So you wanted to add a new verse to \"{SelectedBelief.Belief.Substring(0,20)}...\"?");
+            EditVerseWindow verseDialog = new EditVerseWindow();
+            verseDialog.ShowDialog();
+            if (verseDialog.DialogResult == true)
+            {
+                var context = (VerseViewModel)verseDialog.DataContext;
+                VerseDTO verse = new VerseDTO()
+                {
+                    BeliefId = SelectedBelief.Id,
+                    Book = context.BookList.IndexOf(context.SelectedBook),
+                    Chapter = context.SelectedChapter,
+                    VerseStart = context.SelectedVerseStart,
+                    VerseEnd = context.SelectedVerseEnd
+                };
+                long newId = BibleBeliefsRepository.CreateVerse(verse);
+                Verses = BibleBeliefsRepository.GetVerses(SelectedBelief.Id);
+                var v = Verses.Single(s => s.Id == newId);
+                if (v != null) SelectedVerse = v;
+            }
         }
+
+        #endregion
+
+        #region EDIT Functionality
 
         private void ClickEditTopic(object o)
         {
@@ -160,13 +199,45 @@ namespace BibleBeliefs.ViewModels
 
         private void ClickEditBelief(object o)
         {
-            MessageBox.Show($"Edit belief: \"{SelectedBelief.Belief.Substring(0, 20)}...\"");
+            EditBeliefWindow beliefDialog = new EditBeliefWindow();
+            beliefDialog.BeliefValue = SelectedBelief.Belief;
+            beliefDialog.cbTopic.ItemsSource = Topics;
+            beliefDialog.cbTopic.SelectedItem = SelectedTopic;
+            beliefDialog.ShowDialog();
+            if (beliefDialog.DialogResult == true)
+            {
+                SelectedBelief.TopicId = beliefDialog.TopicValue.Id;
+                SelectedBelief.Belief = beliefDialog.BeliefValue;
+                BibleBeliefsRepository.UpdateBelief(_SelectedBelief);
+            }
+            Beliefs = BibleBeliefsRepository.GetBeliefs(_SelectedTopic.Id);
         }
 
         private void ClickEditVerse(object o)
         {
-            MessageBox.Show($"Edit verse: \"{SelectedVerse.VerseText}\"");
+            EditVerseWindow verseDialog = new EditVerseWindow();
+            var context = (VerseViewModel)verseDialog.DataContext;
+            context.SelectedBook = context.BookList[(int)(SelectedVerse.Book)];
+            context.SelectedChapter = (int)SelectedVerse.Chapter; 
+            context.SelectedVerseStart = (int)SelectedVerse.VerseStart; 
+            context.SelectedVerseEnd = (int)SelectedVerse.VerseEnd; 
+            verseDialog.ShowDialog();
+            if (verseDialog.DialogResult == true)
+            {
+                SelectedVerse.Book = context.BookList.IndexOf(context.SelectedBook);
+                SelectedVerse.Chapter = context.SelectedChapter; 
+                SelectedVerse.VerseStart = context.SelectedVerseStart; 
+                SelectedVerse.VerseEnd = context.SelectedVerseEnd;
+                if (SelectedVerse.VerseEnd < SelectedVerse.VerseStart)
+                    SelectedVerse.VerseEnd = SelectedVerse.VerseStart; //Verses must be in order.
+                BibleBeliefsRepository.UpdateVerse(_SelectedVerse);
+            }
+            Verses = BibleBeliefsRepository.GetVerses(_SelectedVerse.BeliefId);
         }
+
+        #endregion
+
+        #region DELETE functionality
 
         private void ClickDeleteTopic(object o)
         {
@@ -182,15 +253,29 @@ namespace BibleBeliefs.ViewModels
 
         private void ClickDeleteBelief(object o)
         {
-            MessageBox.Show($"Delete Belief: \"{SelectedBelief.Belief}\"");
-
+            if (!BibleBeliefsRepository.DeleteBelief(_SelectedBelief.Id))
+            {
+                MessageBox.Show("This belief has verses. You must delete all verses before you can delete the belief!");
+            }
+            else
+            {
+                Beliefs = BibleBeliefsRepository.GetBeliefs(_SelectedTopic.Id);
+            }
         }
 
         private void ClickDeleteVerse(object o)
         {
-            MessageBox.Show($"Delete verse: \"{SelectedVerse.VerseText}\"");
+            if (!BibleBeliefsRepository.DeleteVerse(_SelectedVerse.Id))
+            {
+                MessageBox.Show("Something when wrong! Run... run fast!");
+            }
+            else
+            {
+                Verses = BibleBeliefsRepository.GetVerses(_SelectedBelief.Id);
+            }
         }
 
+        #endregion
 
         #region INPC
         public event PropertyChangedEventHandler PropertyChanged;

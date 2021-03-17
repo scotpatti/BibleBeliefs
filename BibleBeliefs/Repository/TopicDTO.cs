@@ -16,5 +16,10 @@
             get { return _Topic; }
             set { SetField<string>(ref _Topic, value); }
         }
+
+        public override string ToString()
+        {
+            return _Topic;
+        }
     }
 }

@@ -52,5 +52,17 @@
             set { SetField<long>(ref _BeliefId, value); }
         }
 
+        // TODO: DELETE THIS OVERRIDE
+        //public override string ToString()
+        //{
+        //    if (VerseEnd>VerseStart)
+        //    {
+        //        return Books.BookArray[Book] + " " + Chapter + ":" + VerseStart + "-" + VerseEnd;
+        //    }
+        //    else
+        //    {
+        //        return Books.BookArray[Book] + " " + Chapter + ":" + VerseStart;
+        //    }
+        //}
     }
 }

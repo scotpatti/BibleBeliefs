@@ -1,0 +1,23 @@
+﻿<Window x:Class="BibleBeliefs.EditVerseWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:BibleBeliefs.ViewModels"
+        mc:Ignorable="d"
+        Title="New/Edit Verse" Height="112" Width="612">
+    <Window.DataContext>
+        <local:VerseViewModel/>
+    </Window.DataContext>
+    <Grid>
+        <ComboBox x:Name="cbBook" ItemsSource="{Binding BookList}" SelectedItem="{Binding SelectedBook}" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="120"/>
+        <ComboBox x:Name="cbChapter" ItemsSource="{Binding ChapterList}" SelectedIndex="{Binding SelectedChapter}" HorizontalAlignment="Left" Margin="154,10,0,0" VerticalAlignment="Top" Width="120"/>
+        <Label Content=":" HorizontalAlignment="Left" Margin="279,6,0,0" VerticalAlignment="Top"/>
+        <ComboBox x:Name="cbVerseStart" ItemsSource="{Binding VerseList}" SelectedIndex="{Binding SelectedVerseStart}" HorizontalAlignment="Left" Margin="297,10,0,0" VerticalAlignment="Top" Width="120"/>
+        <Label Content="-" HorizontalAlignment="Left" Margin="422,6,0,0" VerticalAlignment="Top"/>
+        <ComboBox x:Name="cbVerseEnd" ItemsSource="{Binding VerseList}" SelectedIndex="{Binding SelectedVerseEnd}" HorizontalAlignment="Left" Margin="442,10,0,0" VerticalAlignment="Top" Width="120"/>
+        <Button x:Name="btOk" Content="_Ok" HorizontalAlignment="Left" Margin="10,37,0,0" VerticalAlignment="Top" Click="btOk_Click"/>
+        <Button x:Name="btCancel" Content="_Cancel" HorizontalAlignment="Left" Margin="35,37,0,0" VerticalAlignment="Top" Click="btCancel_Click"/>
+
+    </Grid>
+</Window>
