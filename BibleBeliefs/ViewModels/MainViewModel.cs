@@ -149,7 +149,10 @@ namespace BibleBeliefs.ViewModels
                 long newId = BibleBeliefsRepository.CreateTopic(topic);
                 Topics = BibleBeliefsRepository.GetTopics();
                 var t = Topics.Single(s => s.Id == newId);
-                if (t != null) SelectedTopic = t;
+                if (t != null)
+                    SelectedTopic = t;
+                else
+                    SelectedTopic = Topics[0];
             }
         }
 

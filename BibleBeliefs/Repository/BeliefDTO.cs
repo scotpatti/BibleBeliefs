@@ -23,5 +23,10 @@
             get { return _TopicId; }
             set { SetField<long>(ref _TopicId, value); }
         }
+
+        public override string ToString()
+        {
+            return _Belief;
+        }
     }
 }

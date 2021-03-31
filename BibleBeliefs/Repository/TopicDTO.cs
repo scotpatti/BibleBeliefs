@@ -2,8 +2,8 @@
 {
     public class TopicDTO : BaseDTO
     {
-        long _Id;
-        string _Topic;
+        private long _Id;
+        private string _Topic;
 
         public long Id 
         { 

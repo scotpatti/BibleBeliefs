@@ -5,7 +5,6 @@ namespace BibleBeliefs.Repository
 {
     public class BaseDTO : INotifyPropertyChanged
     {
-
         #region INPC
         public event PropertyChangedEventHandler PropertyChanged;
 
